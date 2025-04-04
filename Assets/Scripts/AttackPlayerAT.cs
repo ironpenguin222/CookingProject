@@ -18,7 +18,7 @@ public class AttackPlayerAT : ActionTask
     public float facingThreshold = 0.85f;
     public float rotationSpeed = 5f;
 
-    private bool isAttacking = false;
+    public bool isAttacking = false;
 
 
     protected override void OnExecute()
@@ -96,6 +96,8 @@ public class AttackPlayerAT : ActionTask
             elapsedTime += Time.deltaTime;
             yield return null;
         }
+
+
 
         isAttacking = false;
         EndAction(true);

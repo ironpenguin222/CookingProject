@@ -12,12 +12,29 @@ public class EnemyHealth : MonoBehaviour
 
     public TextMeshProUGUI enemyNameText;
     public Slider healthBar;
+    public GameObject player;
+    public int detectionRange = 5;
+    public float tookDamage = 0;
+    public float iFrames = 0;
 
     private void Start()
     {
         currentHealth = maxHealth;
         enemyNameText.text = enemyName;
         UpdateHealthUI();
+    }
+
+    private void Update()
+    {
+        if (tookDamage == 1)
+        {
+            iFrames += Time.deltaTime;
+        }
+        if(iFrames >= 0.5)
+        {
+            tookDamage = 0;
+            iFrames = 0;
+        }
     }
 
     public void TakeDamage(int damage)
@@ -28,6 +45,22 @@ public class EnemyHealth : MonoBehaviour
         if (currentHealth <= 0)
         {
             Die();
+        }
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        float distance = Vector3.Distance(transform.position, player.transform.position);
+        if (distance < detectionRange && tookDamage == 0)
+        {
+
+        PlayerController playerController = player.GetComponent<PlayerController>();
+
+        if (playerController.isAttacking)
+            {
+                TakeDamage(10);
+                tookDamage = 1;
+            }
         }
     }
 

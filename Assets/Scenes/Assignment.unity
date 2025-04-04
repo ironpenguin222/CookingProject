@@ -4283,6 +4283,7 @@ MonoBehaviour:
   maxStamina: 100
   currentStamina: 0
   staminaRegenRate: 15
+  tookDamage: 0
   maxFlasks: 3
   healAmount: 50
   drinkTime: 2
@@ -4299,6 +4300,8 @@ MonoBehaviour:
   attackDuration: 0.4
   isAttacking: 0
   attackBufferTime: 0.3
+  enemy: {fileID: 0}
+  iFrames: 0
   shield: {fileID: 386246338}
   shieldSidePosition: {fileID: 700202173}
   shieldFrontPosition: {fileID: 2097251929}
@@ -6988,8 +6991,8 @@ MonoBehaviour:
     _version: 3.31
     _category: 
     _comments: 
-    _translation: {x: -109, y: -85}
-    _zoomFactor: 0.75008976
+    _translation: {x: -451, y: -100}
+    _zoomFactor: 0.8778122
   _firstActivation: 0
   _enableAction: 0
   _disableAction: 0
@@ -7014,6 +7017,10 @@ MonoBehaviour:
   maxHealth: 200
   enemyNameText: {fileID: 1698586581}
   healthBar: {fileID: 1582790362}
+  player: {fileID: 975724235}
+  detectionRange: 5
+  tookDamage: 0
+  iFrames: 0
 --- !u!1 &1857204902
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 public class PlayerController : MonoBehaviour
 {
@@ -13,6 +14,7 @@ public class PlayerController : MonoBehaviour
     public float maxStamina = 100f;
     public float currentStamina;
     public float staminaRegenRate = 10f;
+    public float tookDamage = 0;
 
     [Header("Healing System")]
     public int maxFlasks = 3;
@@ -45,6 +47,8 @@ public class PlayerController : MonoBehaviour
     public bool isAttacking = false;
     public float attackBufferTime = 0.3f;
     private float lastAttackInputTime = 0f;
+    public GameObject enemy;
+    public float iFrames;
 
     [Header("Blocking")]
     public GameObject shield;
@@ -81,6 +85,17 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+
+        if (tookDamage == 1)
+        {
+            iFrames += Time.deltaTime;
+        }
+        if (iFrames >= 0.5)
+        {
+            tookDamage = 0;
+            iFrames = 0;
+        }
+
         if (Input.GetMouseButtonDown(0))
         {
             lastAttackInputTime = Time.time;
@@ -103,6 +118,16 @@ public class PlayerController : MonoBehaviour
         UpdateSwordPosition();
 
         uiManager.UpdateUI(currentHealth, maxHealth, currentStamina, maxStamina, currentFlasks);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (tookDamage == 0)
+        {
+
+                TakeDamage(1);
+                tookDamage = 1;
+        }
     }
 
     private void HandleMovement()
@@ -296,6 +321,21 @@ public class PlayerController : MonoBehaviour
 
         currentHealth = Mathf.Min(maxHealth, currentHealth + healAmount);
         currentFlasks--;
+    }
+
+    public void TakeDamage(int damage)
+    {
+        currentHealth = Mathf.Clamp(currentHealth - damage, 0, maxHealth);
+
+        if (currentHealth <= 0)
+        {
+            Die();
+        }
+    }
+    private void Die()
+    {
+        Debug.Log("you have died.");
+        gameObject.SetActive(false);
     }
 
     private void StartBlock()
