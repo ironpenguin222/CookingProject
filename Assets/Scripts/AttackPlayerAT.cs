@@ -11,7 +11,7 @@ public class AttackPlayerAT : ActionTask
     public Transform swordWindUpPosition;
     public Transform swordMidSwingPosition;
     public Transform swordExtendedPosition;
-    public Transform target;
+    public BBParameter<Transform> target;
 
     public float swordSwingSpeed = 10f;
     public float attackDuration = 0.6f;
@@ -19,6 +19,7 @@ public class AttackPlayerAT : ActionTask
     public float rotationSpeed = 5f;
 
     public bool isAttacking = false;
+    public static bool damageWindow = false;
 
 
     protected override void OnExecute()
@@ -33,7 +34,7 @@ public class AttackPlayerAT : ActionTask
     {
         while (!IsFacingTarget())
         {
-            Vector3 directionToTarget = (target.position - agent.transform.position).normalized;
+            Vector3 directionToTarget = (target.value.position - agent.transform.position).normalized;
             Quaternion targetRotation = Quaternion.LookRotation(directionToTarget);
             agent.transform.rotation = Quaternion.Slerp(agent.transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
             yield return null;
@@ -45,7 +46,7 @@ public class AttackPlayerAT : ActionTask
     private bool IsFacingTarget()
     {
 
-        Vector3 toTarget = (target.position - agent.transform.position).normalized;
+        Vector3 toTarget = (target.value.position - agent.transform.position).normalized;
         float dotPoint = Vector3.Dot(agent.transform.forward, toTarget);
 
         return dotPoint >= facingThreshold;
@@ -54,6 +55,7 @@ public class AttackPlayerAT : ActionTask
     private IEnumerator SwingSword()
     {
         isAttacking = true;
+
         float elapsedTime = 0f;
         float phaseTime = attackDuration / 4;
         float fastPhaseTime = phaseTime / 5;
@@ -69,6 +71,7 @@ public class AttackPlayerAT : ActionTask
 
         // Mid-point of sword swing
         elapsedTime = 0f;
+        damageWindow = true;
         while (elapsedTime < fastPhaseTime)
         {
             sword.position = Vector3.Lerp(sword.position, swordMidSwingPosition.position, swordSwingSpeed * Time.deltaTime);
@@ -88,6 +91,7 @@ public class AttackPlayerAT : ActionTask
         }
 
         // Back to the idle pos
+        damageWindow = false;
         elapsedTime = 0f;
         while (elapsedTime < phaseTime)
         {

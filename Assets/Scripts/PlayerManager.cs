@@ -122,11 +122,17 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (tookDamage == 0)
+        if (tookDamage == 0 && AttackPlayerAT.damageWindow)
         {
-
-                TakeDamage(1);
+            if (isBlocking)
+            {
+                currentStamina -= blockStaminaDrain;
+            }
+            else
+            {
+                TakeDamage(10);
                 tookDamage = 1;
+            }
         }
     }
 
