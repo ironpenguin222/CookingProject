@@ -14,7 +14,7 @@ public class PlayerController : MonoBehaviour
     public float maxStamina = 100f;
     public float currentStamina;
     public float staminaRegenRate = 10f;
-    public float tookDamage = 0;
+    public bool tookDamage = false;
 
     [Header("Healing System")]
     public int maxFlasks = 3;
@@ -49,6 +49,10 @@ public class PlayerController : MonoBehaviour
     private float lastAttackInputTime = 0f;
     public GameObject enemy;
     public float iFrames;
+    public float attackCount;
+    public float timeWindow;
+    public float lastAttackTime = -999f;
+    public EnemyHealth em;
 
     [Header("Blocking")]
     public GameObject shield;
@@ -78,27 +82,27 @@ public class PlayerController : MonoBehaviour
         currentStamina = maxStamina;
         currentFlasks = maxFlasks;
 
-        if (uiManager != null) {
+        if (uiManager != null)
+        {
             uiManager.UpdateUI(currentHealth, maxHealth, currentStamina, maxStamina, currentFlasks);
-                }
+        }
+        lastAttackInputTime = Time.time;
     }
 
     private void Update()
     {
-
-        if (tookDamage == 1)
+        if (Time.time - lastAttackTime > timeWindow)
+        {
+            em.suspicion += 0.4f * Time.deltaTime;
+        }
+        if (tookDamage)
         {
             iFrames += Time.deltaTime;
         }
-        if (iFrames >= 0.5)
+        if (iFrames >= 2)
         {
-            tookDamage = 0;
+            tookDamage = false;
             iFrames = 0;
-        }
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            lastAttackInputTime = Time.time;
         }
 
         if (!isAttacking && (Time.time - lastAttackInputTime <= attackBufferTime))
@@ -122,7 +126,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (tookDamage == 0 && AttackPlayerAT.damageWindow)
+        if (!tookDamage && AttackPlayerAT.damageWindow)
         {
             if (isBlocking)
             {
@@ -131,7 +135,7 @@ public class PlayerController : MonoBehaviour
             else
             {
                 TakeDamage(10);
-                tookDamage = 1;
+                tookDamage = true;
             }
         }
     }
@@ -188,10 +192,12 @@ public class PlayerController : MonoBehaviour
                 StopCoroutine(Roll());
             }
             StartCoroutine(SwingSword());
+            lastAttackInputTime = Time.time;
         }
         if (Input.GetMouseButtonDown(0) && currentStamina >= attackStaminaCost && !isAttacking)
         {
             StartCoroutine(SwingSword());
+            lastAttackInputTime = Time.time;
         }
         if (Input.GetMouseButtonDown(1))
         {
@@ -246,6 +252,7 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator SwingSword()
     {
+        attackCount++;
         if (isAttacking)
         {
             if (currentStamina >= attackStaminaCost) queuedAttack = true;
@@ -282,6 +289,7 @@ public class PlayerController : MonoBehaviour
 
         yield return new WaitForSeconds(attackDuration);
         StartCoroutine(AttackRecovery());
+        lastAttackTime = Time.time;
     }
 
     private IEnumerator SwingMotion(Transform target)
@@ -332,7 +340,7 @@ public class PlayerController : MonoBehaviour
     public void TakeDamage(int damage)
     {
         currentHealth = Mathf.Clamp(currentHealth - damage, 0, maxHealth);
-
+        attackCount--;
         if (currentHealth <= 0)
         {
             Die();

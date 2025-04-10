@@ -12,11 +12,14 @@ public class AttackPlayerAT : ActionTask
     public Transform swordMidSwingPosition;
     public Transform swordExtendedPosition;
     public BBParameter<Transform> target;
+    public BBParameter<EnemyHealth> health;
 
     public float swordSwingSpeed = 10f;
     public float attackDuration = 0.6f;
     public float facingThreshold = 0.85f;
     public float rotationSpeed = 5f;
+    public float distance;
+    public float closeShave;
 
     public bool isAttacking = false;
     public static bool damageWindow = false;
@@ -26,6 +29,7 @@ public class AttackPlayerAT : ActionTask
     {
         if (!isAttacking)
         {
+            distance = Vector3.Distance(agent.transform.position, target.value.position);
             StartCoroutine(RotateAndAttack());
         }
     }
@@ -101,7 +105,18 @@ public class AttackPlayerAT : ActionTask
             yield return null;
         }
 
-
+        if (distance < closeShave)
+        {
+            PlayerController playerController = health.value.player.GetComponent<PlayerController>();
+            if(playerController != null)
+            {
+                if (!playerController.tookDamage)
+                {
+                    health.value.suspicion -= 2f;
+                }
+            }
+            
+        }
 
         isAttacking = false;
         EndAction(true);

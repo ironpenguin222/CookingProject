@@ -10,7 +10,7 @@ public class DodgeAT : ActionTask
     public float defaultDodge;
     public float rotationAngle = 30f;
     public float dodgeDuration = 0.5f;
-
+    public BBParameter<EnemyHealth> health;
     private Vector3 dodgeTarget;
     private float dodgeEndTime;
     private bool isDodging = false;
@@ -63,6 +63,11 @@ public class DodgeAT : ActionTask
 
         if (Time.time >= dodgeEndTime || navAgent.remainingDistance <= 0.1f)
         {
+            PlayerController playerController = health.value.player.GetComponent<PlayerController>();
+            if (!health.value.tookDamage && playerController.isAttacking)
+            {
+                health.value.suspicion -= 1;
+            }
             isDodging = false;
             EndAction(true);
         }

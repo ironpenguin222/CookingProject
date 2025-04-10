@@ -48,13 +48,13 @@ namespace NodeCanvas.Tasks.Actions
             navAgent.isStopped = false;
 
             isCorrectingCourse = Random.value < 0.2f;
-            delayBeforeMoving = Random.Range(0.2f, 1.0f);
+            delayBeforeMoving = Random.Range(0.4f, 1.4f);
             hasCorrected = !isCorrectingCourse;
 
             if (isCorrectingCourse)
             {
                 Vector3 wrongDir = (agent.transform.position - currentTarget.value.position).normalized;
-                Vector3 fakeDest = agent.transform.position + wrongDir * 5f;
+                Vector3 fakeDest = agent.transform.position + wrongDir * 10f;
                 navAgent.SetDestination(fakeDest);
                 DisplayLine(detourLines);
             }
@@ -87,8 +87,14 @@ namespace NodeCanvas.Tasks.Actions
 
             if (!navAgent.pathPending && navAgent.remainingDistance <= navAgent.stoppingDistance && navAgent.velocity.sqrMagnitude < 0.01f)
             {
+                
+                float distanceToTarget = Vector3.Distance(agent.transform.position, currentTarget.value.position);
+
+                if (distanceToTarget <= closeEnoughThreshold + 0.5f)
+                {
+                    DisplayLine(arrivalLines);
+                }
                 navAgent.ResetPath();
-                DisplayLine(arrivalLines);
                 EndAction(true);
             }
         }

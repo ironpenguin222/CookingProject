@@ -4,7 +4,15 @@ using NodeCanvas.Framework;
 public class DodgeCT : ConditionTask
 {
     public BBParameter<GameObject> player;
-    public float detectionRange = 5f;
+    public BBParameter<EnemyHealth> manager;
+    public float detectionRange;
+
+
+    protected override string OnInit()
+    {
+        detectionRange = manager.value.detectionRange;
+        return null;
+    }
 
     protected override bool OnCheck()
     {

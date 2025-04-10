@@ -8,11 +8,13 @@ namespace NodeCanvas.Tasks.Conditions {
 	public class TargetInRangeCT : ConditionTask {
 
 		public BBParameter<Transform> currentTarget;
+		public BBParameter<EnemyHealth> manager;
 		public float rangeDistance;
 
 		//Use for initialization. This is called only once in the lifetime of the task.
 		//Return null if init was successfull. Return an error string otherwise
 		protected override string OnInit(){
+			rangeDistance = manager.value.detectionRange;
 			return null;
 		}
 
