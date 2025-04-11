@@ -13,6 +13,8 @@ public class FaceCamera : MonoBehaviour
     {
         if (mainCamera == null) return;
 
+        // Always face camera
+
         transform.forward = mainCamera.transform.forward;
     }
 }

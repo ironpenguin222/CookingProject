@@ -5,6 +5,8 @@ using NodeCanvas.Tasks.Actions;
 
 public class DodgeAT : ActionTask
 {
+    // Variables
+
     public float dodgeDistance = 2f;
     public float dodgeSpeed = 5f;
     public float defaultDodge;
@@ -18,6 +20,8 @@ public class DodgeAT : ActionTask
 
     protected override string OnInit()
     {
+        // Sets up default values
+
         navAgent = agent.GetComponent<NavMeshAgent>();
         defaultDodge = dodgeDistance;
         return null;
@@ -25,9 +29,13 @@ public class DodgeAT : ActionTask
 
     protected override void OnExecute()
     {
+        // vector 3 values for different dodges
+
         dodgeDistance = defaultDodge;
         Vector3 backwardDirection = -agent.transform.forward * dodgeDistance;
         Vector3 sideDodge = (Random.Range(0, 2) == 0) ? agent.transform.right : -agent.transform.right;
+
+        // Checks if there is a wall behind him to move differently based on surroundings
 
         if (Physics.Raycast(agent.transform.position, -agent.transform.forward, out RaycastHit hit, dodgeDistance))
         {
@@ -39,10 +47,14 @@ public class DodgeAT : ActionTask
             dodgeTarget = agent.transform.position + backwardDirection;
         }
 
+        // Uses navmesh to dodge better
+
         if (NavMesh.SamplePosition(dodgeTarget, out NavMeshHit navHit, 1f, NavMesh.AllAreas))
         {
             dodgeTarget = navHit.position;
         }
+
+        // dodges out from navmesh destionation for dodge time
 
         navAgent.speed = dodgeSpeed;
         navAgent.SetDestination(dodgeTarget);
@@ -54,12 +66,18 @@ public class DodgeAT : ActionTask
     {
         if (!isDodging) return;
 
+        // Gets direction to dodge
+
         Vector3 directionToDodge = (dodgeTarget - agent.transform.position).normalized;
         if (directionToDodge != Vector3.zero)
         {
+            // Sets target rotation
+
             Quaternion targetRotation = Quaternion.LookRotation(directionToDodge);
             agent.transform.rotation = Quaternion.Slerp(agent.transform.rotation, targetRotation, Time.deltaTime * 10f);
         }
+
+        // Reduces suspicion if the enemy dodges without getting hit
 
         if (Time.time >= dodgeEndTime || navAgent.remainingDistance <= 0.1f)
         {

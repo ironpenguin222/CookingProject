@@ -1,7 +1,6 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
-using static TMPro.SpriteAssetUtilities.TexturePacker_JsonArray;
 
 public class PlayerController : MonoBehaviour
 {
@@ -75,6 +74,8 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
+        // Sets up important parameters for use. Default values
+
         rb = GetComponent<Rigidbody>();
         animator = GetComponent<Animator>();
 
@@ -91,6 +92,8 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        // Checks when last attacked and increases suspicion if it's been too long
+
         if (Time.time - lastAttackTime > timeWindow)
         {
             em.suspicion += 0.4f * Time.deltaTime;
@@ -105,10 +108,14 @@ public class PlayerController : MonoBehaviour
             iFrames = 0;
         }
 
+        // Checks if can swing sword
+
         if (!isAttacking && (Time.time - lastAttackInputTime <= attackBufferTime))
         {
             StartCoroutine(SwingSword());
         }
+
+        // Handles all the functions the player has
 
         if (isRolling || isAttacking) return;
 
@@ -126,12 +133,18 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        // Checks if hit by arrow and loses health
+
         if (other.gameObject.tag == "arrow")
         {
-            Debug.Log("damn");
+            Debug.Log("arrow hit");
+            Destroy(other);
             TakeDamage(10);
             tookDamage = true;
         }
+
+        // Sees if player is being hit by the damage window of the enemy attack and if blocking, it prevents the damage but takes stamina
+
         if (!tookDamage && AttackPlayerAT.damageWindow)
         {
             if (isBlocking)
@@ -150,6 +163,8 @@ public class PlayerController : MonoBehaviour
     {
         if (isRolling) return;
 
+        // Get movement values to set movement
+
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
         moveDirection = new Vector3(horizontal, 0f, vertical).normalized;
@@ -157,6 +172,8 @@ public class PlayerController : MonoBehaviour
         if (moveDirection.magnitude >= 0.1f)
         {
             lastMoveDirection = moveDirection;
+
+            // Sprinting logic, takes more stamina
 
             if (Input.GetKey(KeyCode.LeftShift) && currentStamina > sprintStaminaCost * Time.deltaTime)
             {
@@ -168,9 +185,13 @@ public class PlayerController : MonoBehaviour
                 isSprinting = false;
             }
 
+            // makes current speed the sprinting speed
+
             float currentSpeed = isSprinting ? sprintSpeed : moveSpeed;
             Vector3 moveVelocity = moveDirection * currentSpeed;
             rb.velocity = new Vector3(moveVelocity.x, rb.velocity.y, moveVelocity.z);
+
+            // Checks if player is locked on to set rotation to face target
 
             if (!isLockedOn)
             {
@@ -187,10 +208,15 @@ public class PlayerController : MonoBehaviour
 
     private void HandleCombat()
     {
+        // Checks if should roll
+
         if (Input.GetKeyDown(KeyCode.Space) && !isAttacking && currentStamina >= 15f)
         {
             StartCoroutine(Roll());
         }
+
+        // Queues up the attack while rolling so that you can attack out of a roll
+
         else if (Input.GetMouseButtonDown(0) && currentStamina >= attackStaminaCost)
         {
             if (isRolling)
@@ -200,11 +226,17 @@ public class PlayerController : MonoBehaviour
             StartCoroutine(SwingSword());
             lastAttackInputTime = Time.time;
         }
+
+        // Basic attack woth sword, make sure you can swing, then makes it swing
+
         if (Input.GetMouseButtonDown(0) && currentStamina >= attackStaminaCost && !isAttacking)
         {
             StartCoroutine(SwingSword());
             lastAttackInputTime = Time.time;
         }
+
+        // Blocks on key press
+
         if (Input.GetMouseButtonDown(1))
         {
             StartBlock();
@@ -217,11 +249,17 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator Roll()
     {
+        // Checks if it has direction and if not then its done
+
         if (lastMoveDirection.magnitude == 0) yield break;
+
+        // sets the rolling state and reduces stamina
 
         currentStamina -= 10f;
         isRolling = true;
         isInvincible = true;
+
+        // Sets the roll direction and gets the collider
 
         Collider playerCollider = GetComponent<Collider>();
         float originalY = transform.position.y;
@@ -230,8 +268,12 @@ public class PlayerController : MonoBehaviour
         float elapsedTime = 0f;
         float totalRotation = 360f;
 
+        // Makes collider false for smooth rotation without bumping on ground
+
         yield return new WaitForEndOfFrame();
         playerCollider.enabled = false;
+
+        // Moves and rotates the player based on the parameters for as long as the duration, keeping y the same so they don't phase through the floor
 
         while (elapsedTime < rollDuration)
         {
@@ -246,6 +288,8 @@ public class PlayerController : MonoBehaviour
             yield return null;
         }
 
+        // Ending the roll / resetting values
+
         isInvincible = false;
         isRolling = false;
 
@@ -258,24 +302,36 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator SwingSword()
     {
+        // Starts the attack
+
         attackCount++;
         if (isAttacking)
         {
+            // queues up attacks if you have enough resources
+
             if (currentStamina >= attackStaminaCost) queuedAttack = true;
             yield break;
         }
 
+        // if not enough stamina it doesn't work
+
         if (currentStamina < attackStaminaCost) yield break;
+
+        // sets player as attacking and reduces stamina
 
         isAttacking = true;
         currentStamina -= attackStaminaCost;
         queuedAttack = false;
+
+        // checks if the attack is a combo
 
         if (isComboAttack)
         {
             sword.transform.position = swordSwingPosition.position;
             sword.transform.rotation = swordSwingPosition.rotation;
         }
+
+        // plays the swing motion from these positions
 
         yield return SwingMotion(swordSwingPosition);
         yield return new WaitForSeconds(attackDuration / 4);
@@ -285,6 +341,8 @@ public class PlayerController : MonoBehaviour
 
         if (queuedAttack && currentStamina >= attackStaminaCost)
         {
+            // if queued attack it plays again
+
             isComboAttack = true;
             StartCoroutine(SwingSword());
         }
@@ -293,6 +351,8 @@ public class PlayerController : MonoBehaviour
             isComboAttack = false;
         }
 
+        // Wait for the attac duration and then recover
+
         yield return new WaitForSeconds(attackDuration);
         StartCoroutine(AttackRecovery());
         lastAttackTime = Time.time;
@@ -300,6 +360,8 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator SwingMotion(Transform target)
     {
+        // Uses lerps based on the attack duration to smoothly move the sword
+
         float elapsedTime = 0f;
         while (elapsedTime < attackDuration / 2)
         {
@@ -310,11 +372,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // Recovery variables
+
     private float recoverySlowdown = 0.5f;
     private float recoveryTime = 0.3f;
 
     private IEnumerator AttackRecovery()
     {
+        // Time needed for the player to recover from the attack. Temp slowdown
+
         float elapsedTime = 0f;
         float originalSpeed = moveSpeed;
 
@@ -329,6 +395,8 @@ public class PlayerController : MonoBehaviour
 
     private void HandleHealing()
     {
+        // When you press E, you heal
+
         if (Input.GetKeyDown(KeyCode.E) && currentFlasks > 0 && currentHealth < maxHealth)
         {
             StartCoroutine(DrinkFlask());
@@ -337,6 +405,8 @@ public class PlayerController : MonoBehaviour
 
     private IEnumerator DrinkFlask()
     {
+        // Waits drinking time and then heals player
+
         yield return new WaitForSeconds(drinkTime);
 
         currentHealth = Mathf.Min(maxHealth, currentHealth + healAmount);
@@ -345,6 +415,8 @@ public class PlayerController : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
+        // Deals damage to the player which lowers their current health and if 0 they die
+
         currentHealth = Mathf.Clamp(currentHealth - damage, 0, maxHealth);
         attackCount--;
         if (currentHealth <= 0)
@@ -354,16 +426,22 @@ public class PlayerController : MonoBehaviour
     }
     private void Die()
     {
+        // dead player
+
         Debug.Log("you have died.");
         gameObject.SetActive(false);
     }
 
     private void StartBlock()
     {
+        // If has stamina you can block
+
         if (currentStamina < blockStaminaDrain) return;
 
         isBlocking = true;
     }
+
+    // Stops blocking
 
     private void StopBlock()
     {
@@ -372,6 +450,8 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateShieldPosition()
     {
+        // Lerps to move shield pos based on necessary pos
+
         Transform targetPosition = isBlocking ? shieldFrontPosition : shieldSidePosition;
         shield.transform.position = Vector3.Lerp(shield.transform.position, targetPosition.position, shieldMoveSpeed * Time.deltaTime);
         shield.transform.rotation = Quaternion.Lerp(shield.transform.rotation, targetPosition.rotation, shieldRotationSpeed * Time.deltaTime);
@@ -379,6 +459,8 @@ public class PlayerController : MonoBehaviour
 
     private void UpdateSwordPosition()
     {
+        // Updates the sword position based on lerp of transforms
+
         if (!isAttacking)
         {
             sword.transform.position = Vector3.Lerp(sword.transform.position, swordIdlePosition.position, swordSwingSpeed * Time.deltaTime);
@@ -388,6 +470,8 @@ public class PlayerController : MonoBehaviour
 
     private void RegenerateStamina()
     {
+        // Regen stamina if not doing anything stamina taking
+
         if (!isRolling && !isBlocking && !isSprinting)
         {
             currentStamina = Mathf.Min(maxStamina, currentStamina + staminaRegenRate * Time.deltaTime);
@@ -396,6 +480,8 @@ public class PlayerController : MonoBehaviour
 
     private void HandleLockOn()
     {
+        // Handles lock on
+
         if (Input.GetKeyDown(KeyCode.Tab))
         {
             if (isLockedOn)
@@ -417,6 +503,8 @@ public class PlayerController : MonoBehaviour
 
     private void LockOnToNearestEnemy()
     {
+        // Finds an enemy and locks onto them based on the layermask
+
         Collider[] enemies = Physics.OverlapSphere(transform.position, 10f, LayerMask.GetMask("Enemy"));
         if (enemies.Length > 0)
         {
@@ -427,6 +515,8 @@ public class PlayerController : MonoBehaviour
 
     private void RotateTowardsEnemy()
     {
+        // Consistently rotates to face the enemy while locked on
+
         Vector3 direction = (targetEnemy.position - transform.position).normalized;
         Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, rotationSpeed * Time.deltaTime);

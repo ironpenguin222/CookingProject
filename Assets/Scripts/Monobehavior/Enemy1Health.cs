@@ -5,15 +5,19 @@ using TMPro;
 
 public class Enemy1Health : MonoBehaviour
 {
+    //Variable values
+
     public string enemyName = "Enemy";
     public int maxHealth = 100;
     public int currentHealth;
     public bool tookDamage = false;
     public float iFrames = 0f;
+    public static int currEnemy = 1;
 
     public TextMeshProUGUI enemyNameText;
     public Slider healthBar;
     public GameObject player;
+    public GameObject enemy2;
     public int detectionRange = 5;
 
     public Image winIMG;
@@ -27,6 +31,8 @@ public class Enemy1Health : MonoBehaviour
         currentHealth = maxHealth;
         enemyNameText.text = enemyName;
         UpdateHealthUI();
+
+        //Make UI Transparent
 
         Color c1 = susIMG.color;
         c1.a = 0f;
@@ -47,6 +53,8 @@ public class Enemy1Health : MonoBehaviour
 
     private void Update()
     {
+
+        // Checks taken to damage to make sure can't get hit multiple times per swing
         if (tookDamage)
         {
             iFrames += Time.deltaTime;
@@ -56,17 +64,19 @@ public class Enemy1Health : MonoBehaviour
                 iFrames = 0f;
             }
         }
-
+        // Checks is enemy is dead, then sets accordingly
         PlayerController playerController = player.GetComponent<PlayerController>();
         if (playerController.currentHealth <= 0)
         {
-            StartCoroutine(FadeIn(winIMG));
+            StartCoroutine(FadeIn(deadIMG));
             player.SetActive(false);
         }
     }
 
     public void TakeDamage(int damage)
     {
+        // enemy's health lowers and the UI lowers accordingly, which once at 0 leads to death
+
         currentHealth = Mathf.Clamp(currentHealth - damage, 0, maxHealth);
         UpdateHealthUI();
 
@@ -78,6 +88,9 @@ public class Enemy1Health : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+
+        // Checks distance and then take damage if player is attacking
+
         float distance = Vector3.Distance(transform.position, player.transform.position);
         if (distance < detectionRange && !tookDamage)
         {
@@ -92,18 +105,25 @@ public class Enemy1Health : MonoBehaviour
 
     private void UpdateHealthUI()
     {
+        // Updates health UI
+
         healthBar.value = (float)currentHealth / maxHealth;
     }
 
     private void Die()
     {
+        // Kills enemy, spanws other enemy and sets current enemy variable to 2
+
         Debug.Log(enemyName + " has died.");
-        StartCoroutine(FadeIn(exeIMG));
-        player.SetActive(false);
+        currEnemy = 2;
+        enemy2.SetActive(true);
+        gameObject.SetActive(false);
     }
 
     private IEnumerator FadeIn(Image img)
     {
+        // Fades in the UI to show to the player in a less sudden way. Uses a lerp to slowly return alpha.
+
         float elapsed = 0f;
         Color originalColor = img.color;
 

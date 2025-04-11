@@ -6,6 +6,7 @@ namespace NodeCanvas.Tasks.Conditions
 {
     public class PlayerDetectionCT : ConditionTask<Transform>
     {
+        // Variable values
 
         public LayerMask playerLayerMask;
         public float detectionRadius = 10f;
@@ -13,6 +14,7 @@ namespace NodeCanvas.Tasks.Conditions
 
         protected override bool OnCheck()
         {
+            // Sets values to very far first
 
             Transform bestTarget = null;
             float bestDistance = Mathf.Infinity;
@@ -22,14 +24,20 @@ namespace NodeCanvas.Tasks.Conditions
 
             foreach (Collider targetCollider in detectedTargets)
             {
+                // Reactive detection by searching all colliders
+
                 float distance = Vector3.Distance(agent.transform.position, targetCollider.transform.position);
 
                 if (distance < bestDistance)
                 {
+                    // sets best distance
+
                     bestDistance = distance;
                     bestTarget = targetCollider.transform;
                 }
             }
+
+            // sets  target based on this
 
             detectionTarget.value = bestTarget;
 

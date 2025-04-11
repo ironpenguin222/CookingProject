@@ -9,6 +9,8 @@ namespace NodeCanvas.Tasks.Actions
 {
     public class ApproachAT : ActionTask
     {
+        // Variable values
+
         public BBParameter<Transform> currentTarget;
         public BBParameter<Transform> detectionTarget;
         public float speed = 3.5f;
@@ -20,6 +22,8 @@ namespace NodeCanvas.Tasks.Actions
         private bool hasCorrected = false;
 
         public TextMeshProUGUI speechBubble;
+
+        // Text options for when something happens with enemy
        
         [TextArea] public List<string> noTargetLines = new List<string>();
         [TextArea] public List<string> detourLines = new List<string>();
@@ -29,12 +33,16 @@ namespace NodeCanvas.Tasks.Actions
 
         protected override string OnInit()
         {
+            // Sets agent
+
             navAgent = agent.GetComponent<NavMeshAgent>();
             return null;
         }
 
         protected override void OnExecute()
         {
+            // Ends action if target is null
+
             currentTarget.value = detectionTarget.value;
             if (currentTarget == null || currentTarget.value == null)
             {
@@ -43,9 +51,13 @@ namespace NodeCanvas.Tasks.Actions
                 return;
             }
 
+            // Sets values for the movement
+
             navAgent.speed = speed;
             navAgent.stoppingDistance = closeEnoughThreshold;
             navAgent.isStopped = false;
+
+            // Makes the enemy follishly wander around accidentally
 
             isCorrectingCourse = Random.value < 0.2f;
             delayBeforeMoving = Random.Range(0.4f, 1.4f);
@@ -53,6 +65,8 @@ namespace NodeCanvas.Tasks.Actions
 
             if (isCorrectingCourse)
             {
+                // Gives him a fake destination to make him appear foolish
+
                 Vector3 wrongDir = (agent.transform.position - currentTarget.value.position).normalized;
                 Vector3 fakeDest = agent.transform.position + wrongDir * 10f;
                 navAgent.SetDestination(fakeDest);
@@ -60,6 +74,8 @@ namespace NodeCanvas.Tasks.Actions
             }
             else
             {
+                // Moves to normal destination
+
                 navAgent.SetDestination(currentTarget.value.position);
                 DisplayLine(startMoveLines);
             }
@@ -73,6 +89,8 @@ namespace NodeCanvas.Tasks.Actions
                 return;
             }
 
+            // Reoriented to the destination towards the player by setting destination to the player
+
             if (!hasCorrected)
             {
                 delayBeforeMoving -= Time.deltaTime;
@@ -84,6 +102,8 @@ namespace NodeCanvas.Tasks.Actions
                 }
                 return;
             }
+
+            // Checks if close enough to player to start attacking the player
 
             if (!navAgent.pathPending && navAgent.remainingDistance <= navAgent.stoppingDistance && navAgent.velocity.sqrMagnitude < 0.01f)
             {
@@ -99,6 +119,8 @@ namespace NodeCanvas.Tasks.Actions
             }
         }
 
+        // Resets path when stopped
+
         protected override void OnStop()
         {
             if (navAgent != null && navAgent.hasPath)
@@ -106,6 +128,8 @@ namespace NodeCanvas.Tasks.Actions
                 navAgent.ResetPath();
             }
         }
+
+        // Displays the different lines using the speech bubble above his head which reads out for different situations.
 
         private void DisplayLine(List<string> lines)
         {

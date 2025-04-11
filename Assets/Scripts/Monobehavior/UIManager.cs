@@ -4,6 +4,8 @@ using TMPro;
 
 public class PlayerUIManager : MonoBehaviour
 {
+    // UI Elements
+
     public Slider healthBar;
     public Slider staminaBar;
     public TMP_Text flaskText;
@@ -11,6 +13,8 @@ public class PlayerUIManager : MonoBehaviour
 
     public void UpdateUI(float currentHealth, float maxHealth, float currentStamina, float maxStamina, int flasks)
     {
+        // Adjusts Values
+
         healthBar.value = currentHealth / maxHealth;
         staminaBar.value = currentStamina / maxStamina;
         flaskText.text = "Cubestus Flask";

@@ -6,6 +6,8 @@ using static UnityEngine.GraphicsBuffer;
 
 public class AttackPlayerAT : ActionTask
 {
+    // Transform values
+
     public Transform sword;
     public Transform swordIdlePosition;
     public Transform swordWindUpPosition;
@@ -14,6 +16,8 @@ public class AttackPlayerAT : ActionTask
     public BBParameter<Transform> target;
     public BBParameter<EnemyHealth> health;
 
+    // Float values
+
     public float swordSwingSpeed = 10f;
     public float attackDuration = 0.6f;
     public float facingThreshold = 0.85f;
@@ -21,12 +25,16 @@ public class AttackPlayerAT : ActionTask
     public float distance;
     public float closeShave;
 
+    // Booleans
+
     public bool isAttacking = false;
     public static bool damageWindow = false;
 
 
     protected override void OnExecute()
     {
+        // Starts attack if not attacking
+
         if (!isAttacking)
         {
             distance = Vector3.Distance(agent.transform.position, target.value.position);
@@ -36,6 +44,8 @@ public class AttackPlayerAT : ActionTask
 
     private IEnumerator RotateAndAttack()
     {
+        // When enemy is not facing target, he rotates to face the player
+
         while (!IsFacingTarget())
         {
             Vector3 directionToTarget = (target.value.position - agent.transform.position).normalized;
@@ -49,6 +59,7 @@ public class AttackPlayerAT : ActionTask
 
     private bool IsFacingTarget()
     {
+        // Returns based on if facing player or not
 
         Vector3 toTarget = (target.value.position - agent.transform.position).normalized;
         float dotPoint = Vector3.Dot(agent.transform.forward, toTarget);
@@ -58,7 +69,11 @@ public class AttackPlayerAT : ActionTask
 
     private IEnumerator SwingSword()
     {
+        // Swinging the sword
+
         isAttacking = true;
+
+        // Times
 
         float elapsedTime = 0f;
         float phaseTime = attackDuration / 4;
@@ -107,6 +122,8 @@ public class AttackPlayerAT : ActionTask
 
         if (distance < closeShave)
         {
+            // If the player is very close when attacked suspicion is lowered
+
             PlayerController playerController = health.value.player.GetComponent<PlayerController>();
             if(playerController != null)
             {

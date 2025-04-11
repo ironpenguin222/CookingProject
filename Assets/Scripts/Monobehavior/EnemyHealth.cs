@@ -7,6 +7,8 @@ using NodeCanvas.Tasks.Actions;
 
 public class EnemyHealth : MonoBehaviour
 {
+    //Variable values
+
     public string enemyName = "Enemy";
     public int maxHealth = 100;
     public int maxSus = 10;
@@ -30,11 +32,15 @@ public class EnemyHealth : MonoBehaviour
 
     private void Start()
     {
-       
+        // Default Values
+        PlayerController playerController = player.GetComponent<PlayerController>();
+        playerController.currentHealth = maxHealth;
         currentHealth = maxHealth;
         enemyNameText.text = enemyName;
         UpdateHealthUI();
         UpdateSusUI();
+
+        //Make UI Transparent
 
         Color c1 = susIMG.color;
         c1.a = 0f;
@@ -51,6 +57,9 @@ public class EnemyHealth : MonoBehaviour
 
     private IEnumerator FadeIn(Image img)
     {
+        // Fades in the UI to show to the player in a less sudden way. Uses a lerp to slowly return alpha.
+
+
         float elapsed = 0f;
         Color originalColor = img.color;
 
@@ -67,6 +76,9 @@ public class EnemyHealth : MonoBehaviour
 
     private void Update()
     {
+
+        // Checks taken to damage to make sure can't get hit multiple times per swing
+
         PlayerController playerController = player.GetComponent<PlayerController>();
         if (tookDamage)
         {
@@ -77,16 +89,24 @@ public class EnemyHealth : MonoBehaviour
             tookDamage = false;
             iFrames = 0;
         }
+
+        // Makes sure suspicion is more than 0
+
         if (suspicion < 0){
             suspicion = 0;
         }
         UpdateSusUI();
+
+        // Ends game if suspicion is too high
 
         if(suspicion >= 10)
         {
             StartCoroutine(FadeIn(susIMG));
             player.SetActive(false);
         }
+
+        // Get player health and if at 0 and suspicion not too high, player win
+
         if(suspicion < 10 && playerController.currentHealth <= 0)
         {
             StartCoroutine(FadeIn(winIMG));
@@ -96,6 +116,8 @@ public class EnemyHealth : MonoBehaviour
 
     public void TakeDamage(int damage)
     {
+        // enemy's health lowers and the UI lowers accordingly, which once at 0 leads to death
+
         currentHealth = Mathf.Clamp(currentHealth - damage, 0, maxHealth);
         UpdateHealthUI();
 
@@ -113,6 +135,8 @@ public class EnemyHealth : MonoBehaviour
 
         PlayerController playerController = player.GetComponent<PlayerController>();
 
+            // Sees if player is attacking too much or too little to add suspicion
+
             if (playerController.attackCount > 3)
             {
                 suspicion += 2;
@@ -125,6 +149,8 @@ public class EnemyHealth : MonoBehaviour
                 playerController.attackCount = 0;
             }
 
+            // Checks distance and then take damage if player is attacking
+
             if (playerController.isAttacking)
             {
                 suspicion += 0.5f;
@@ -136,7 +162,12 @@ public class EnemyHealth : MonoBehaviour
 
     private void UpdateHealthUI()
     {
+        // Updates the health bar
+
         healthBar.value = (float)currentHealth / maxHealth;
+
+        // health thresholds to incentivize sometimes hitting enemy
+
         if (currentHealth <= 70 && thresholds == 0)
         {
             suspicion -=1;
@@ -156,11 +187,15 @@ public class EnemyHealth : MonoBehaviour
 
     private void UpdateSusUI()
     {
+        // Update sus bar
+
         susBar.value = suspicion / maxSus;
     }
 
     private void Die()
     {
+        // Enemy dies and player gets executed
+
         Debug.Log(enemyName + " has died.");
         StartCoroutine(FadeIn(exeIMG));
         player.SetActive(false);

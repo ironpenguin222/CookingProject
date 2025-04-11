@@ -22,6 +22,8 @@ public class CameraController : MonoBehaviour
 
     private void Start()
     {
+        // Start values
+
         playerRb = player.GetComponent<Rigidbody>();
 
         cameraPivot.position = player.position;
@@ -30,6 +32,8 @@ public class CameraController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        // check if locked on
+
         if (isLockedOn)
         {
             LockOnToTarget();
@@ -42,6 +46,8 @@ public class CameraController : MonoBehaviour
 
     private void SmoothFollow()
     {
+        // Follows the player based on the pivot. Uses smooth damp to make smooth transition between movement of third person cam
+
         Vector3 targetPosition = player.position + (playerRb.velocity * Time.fixedDeltaTime);
 
         cameraPivot.position = Vector3.Lerp(cameraPivot.position, targetPosition, followSpeed * Time.fixedDeltaTime);
@@ -62,6 +68,8 @@ public class CameraController : MonoBehaviour
             return;
         }
 
+        // Works different if locked on, rotate to face enemy more
+
         Vector3 direction = (lockOnTarget.position - transform.position).normalized;
         Quaternion targetRotation = Quaternion.LookRotation(direction);
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.fixedDeltaTime);
@@ -69,6 +77,8 @@ public class CameraController : MonoBehaviour
 
     public void ToggleLockOn()
     {
+        // Toggles the lock on
+
         if (isLockedOn)
         {
             isLockedOn = false;
@@ -82,6 +92,8 @@ public class CameraController : MonoBehaviour
 
     private void FindNearestEnemy()
     {
+        // Finds nearest enemy for lock on
+
         Collider[] enemies = Physics.OverlapSphere(player.position, lockOnDistance, enemyLayer);
         if (enemies.Length > 0)
         {
