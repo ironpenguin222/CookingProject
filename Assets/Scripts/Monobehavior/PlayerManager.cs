@@ -126,6 +126,12 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        if (other.gameObject.tag == "arrow")
+        {
+            Debug.Log("damn");
+            TakeDamage(10);
+            tookDamage = true;
+        }
         if (!tookDamage && AttackPlayerAT.damageWindow)
         {
             if (isBlocking)

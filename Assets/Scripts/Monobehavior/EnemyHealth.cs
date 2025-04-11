@@ -163,6 +163,6 @@ public class EnemyHealth : MonoBehaviour
     {
         Debug.Log(enemyName + " has died.");
         StartCoroutine(FadeIn(exeIMG));
-        gameObject.SetActive(false);
+        player.SetActive(false);
     }
 }
